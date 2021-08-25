@@ -1,17 +1,19 @@
 import macros, json
 
-{.experimental:"codeReordering".} # removes the need for forward declarations, should be useful here
+{.experimental:"codeReordering".} # removes the need for forward declarations
 
 
 # nim proc to evaluate possible _type's via case statement
-proc evaluatePyType*(tree: NimNode, node: JsonNode) =
+proc addEvaluatedPyType*(tree: NimNode, node: JsonNode) =
     case node["_type"].getStr
     of "Expr":
-        tree.addExpr(node) # ["value"]) # TEST
+        tree.addExpr(node)
     of "Assign":
         tree.addAssign(node)
     of "If":
         tree.addIf(node)
+    of "Call":
+        tree.addCall(node)
     else: discard
 
 
@@ -33,22 +35,27 @@ proc addIntOrFloat*(tree: NimNode, node: JsonNode) =
     else: discard
 
 
-proc addPyCall*(tree: NimNode, node: JsonNode) =
+proc addCall*(tree: NimNode, node: JsonNode) =
+
+    var callTree = nnkCall.newTree()
+
     case node["func"]["id"].getStr # Function Name
 
     of "print":
-        tree.add newIdentNode("echo")
+        callTree.add newIdentNode("echo")
     else: discard
 
     for arg in node["args"]:
         case arg["_type"].getStr
         of "Str":
-            tree.addString(arg)
+            callTree.addString(arg)
         else:
-            tree.add newIdentNode(arg["id"].getStr)
+            callTree.add newIdentNode(arg["id"].getStr)
     
     for kwarg in node["keywords"]:
         discard
+
+    tree.add callTree
 
 
 proc addPyBinOp*(tree: NimNode, node: JsonNode) =
@@ -92,9 +99,7 @@ proc addPyBinOp*(tree: NimNode, node: JsonNode) =
 proc addExpr*(tree: NimNode, node: JsonNode) =
     case node["value"]["_type"].getStr
     of "Call":
-        var callTree = nnkCall.newTree()
-        callTree.addPyCall(node["value"])
-        tree.add callTree
+        tree.addCall(node["value"])    
     else: discard
 
 
@@ -175,7 +180,7 @@ proc addIfBranches*(tree: var seq[NimNode], node: JsonNode) =
     for body in node["body"]:
         case body["_type"].getStr
         of "Expr":
-            ifStmtBodyTree.addExpr(body) # ["value"]) # TEST
+            ifStmtBodyTree.addExpr(body)
         of "Pass":
             ifStmtBodyTree.addPass()
         else: discard
@@ -224,7 +229,7 @@ proc addIf*(tree: NimNode, node: JsonNode) =
     for body in node["body"]:
         case body["_type"].getStr
         of "Expr":
-            ifStmtBodyTree.addExpr(body) # ["value"]) # TEST
+            ifStmtBodyTree.addExpr(body)
         of "Pass":
             ifStmtBodyTree.addPass()
         else: discard
@@ -240,7 +245,7 @@ proc addIf*(tree: NimNode, node: JsonNode) =
             "(more than 1 item in orelse) Must add functionality :)")
 
     for branch in node["orelse"]:
-        var elifElseBranchTreeSeq: seq[NimNode] #= nnkElifBranch.newTree()
+        var elifElseBranchTreeSeq: seq[NimNode]
         case branch["_type"].getStr
         of "If":
             elifElseBranchTreeSeq.addIfBranches(branch)
