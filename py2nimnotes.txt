@@ -1,0 +1,34 @@
+# python ast docs
+# https://greentreesnakes.readthedocs.io/en/latest/nodes.html#literals
+# nim macro docs
+# https://nim-lang.org/docs/macros.html
+#
+# useful python parsing post: https://forum.nim-lang.org/t/2705
+
+# NOTES:
+# using Python 3.7.3
+# reorganize types in pytypes.nim to reflect python ast docs (above)
+#
+# Idea:
+# - use python ast to parse python code
+# - build a json representation of the ast
+# - use nim to parse the json representation
+# - use nim to generate a nim representation of the ast
+# - use nim to generate a nim representation of the python code
+#
+# I think I can use nimscript to generate the nim representation
+# of the python code via macros during runtime.
+#
+# What I'm thinking is that I can walk the python ast and generate
+# a nim representation of the ast line by line, using the startProcess
+# proc to read from stdout, create a NimNode, fetch another line, etc.
+#
+#
+#
+# # allows for intercepting & rewriting proc call and field access attempts
+# {.experimental: "dotOperators".}
+# # allows access to json fields via `.` rather than `[]` 
+# template `.` (js: JsonNode, field: untyped): JsonNode = js[astToStr(field)]
+
+# removes the need for forward declarations, may be useful &/or necessary
+# {.experimental: "codeReordering".}
