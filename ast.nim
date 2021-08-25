@@ -2,6 +2,19 @@ import macros, json
 
 {.experimental:"codeReordering".} # removes the need for forward declarations, should be useful here
 
+
+# nim proc to evaluate possible _type's via case statement
+proc evaluatePyType*(tree: NimNode, node: JsonNode) =
+    case node["_type"].getStr
+    of "Expr":
+        tree.addExpr(node) # ["value"]) # TEST
+    of "Assign":
+        tree.addAssign(node)
+    of "If":
+        tree.addIf(node)
+    else: discard
+
+
 proc addPass*(tree: NimNode) =
     tree.add nnkDiscardStmt.newTree(newEmptyNode())
 
@@ -77,10 +90,10 @@ proc addPyBinOp*(tree: NimNode, node: JsonNode) =
 
 
 proc addExpr*(tree: NimNode, node: JsonNode) =
-    case node["_type"].getStr
+    case node["value"]["_type"].getStr
     of "Call":
         var callTree = nnkCall.newTree()
-        callTree.addPyCall(node)
+        callTree.addPyCall(node["value"])
         tree.add callTree
     else: discard
 
@@ -144,10 +157,8 @@ proc addCompare*(tree: NimNode, node: JsonNode) =
 proc addIfBranches*(tree: var seq[NimNode], node: JsonNode) =
 
     var branchTree = nnkElifBranch.newTree()
-
     var ifStmtInfixTree = nnkInfix.newTree()
     var ifStmtBodyTree = nnkStmtList.newTree()
-    var ifElifElseBranches: seq[NimNode]
 
     # logic for the operation type of the if statement
     case node["test"]["_type"].getStr
@@ -164,7 +175,7 @@ proc addIfBranches*(tree: var seq[NimNode], node: JsonNode) =
     for body in node["body"]:
         case body["_type"].getStr
         of "Expr":
-            ifStmtBodyTree.addExpr(body["value"])
+            ifStmtBodyTree.addExpr(body) # ["value"]) # TEST
         of "Pass":
             ifStmtBodyTree.addPass()
         else: discard
@@ -172,7 +183,6 @@ proc addIfBranches*(tree: var seq[NimNode], node: JsonNode) =
     # add the IF statement to the tree
     branchTree.add ifStmtInfixTree
     branchTree.add ifstmtBodyTree
-    #ifElifElseBranches.add branchTree
     tree.add branchTree
 
     # logic for the elif/else branch(es) of the if statement
@@ -214,7 +224,7 @@ proc addIf*(tree: NimNode, node: JsonNode) =
     for body in node["body"]:
         case body["_type"].getStr
         of "Expr":
-            ifStmtBodyTree.addExpr(body["value"])
+            ifStmtBodyTree.addExpr(body) # ["value"]) # TEST
         of "Pass":
             ifStmtBodyTree.addPass()
         else: discard
