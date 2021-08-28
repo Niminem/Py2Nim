@@ -10,6 +10,14 @@ proc addExpr*(tree: NimNode, node: JsonNode) = # -- Expression --
     case node["value"]["_type"].getStr
     of "Call":
         tree.addCall(node["value"])
+    of "BinaryOp":
+        tree.addBinOp(node["value"])
+    of "Name":
+        tree.addName(node["value"])
+    of "Num":
+        tree.addIntOrFloat(node["value"])
+    of "Str":
+        tree.addString(node["value"])
     else: discard
 
 
@@ -34,7 +42,7 @@ proc addCall*(tree: NimNode, node: JsonNode) = # -- Call --
     tree.add callTree
 
 
-proc addPyBinOp*(tree: NimNode, node: JsonNode) =
+proc addBinOp*(tree: NimNode, node: JsonNode) =
     var infixTree = nnkInfix.newTree()
 
     case node["op"]["_type"].getStr # adding the operator
@@ -56,7 +64,7 @@ proc addPyBinOp*(tree: NimNode, node: JsonNode) =
     of "Num":
         infixTree.addIntOrFloat(node["left"])
     of "BinOp":
-        infixTree.addPyBinOp(node["left"])
+        infixTree.addBinOp(node["left"])
     of "Name":
         infixTree.addName(node["left"])
     else: discard
@@ -65,7 +73,7 @@ proc addPyBinOp*(tree: NimNode, node: JsonNode) =
     of "Num":
         infixTree.addIntOrFloat(node["right"])
     of "BinOp":
-        infixTree.addPyBinOp(node["right"])
+        infixTree.addBinOp(node["right"])
     of "Name":
         infixTree.addName(node["right"])
     else: discard
@@ -94,7 +102,7 @@ proc addCompare*(tree: NimNode, node: JsonNode) =
     of "Str": tree.addString(node["left"])
     of "Num": tree.addIntOrFloat(node["left"])
     of "Name": tree.addName(node["left"])
-    of "BinOp": tree.addPyBinOp(node["left"])
+    of "BinOp": tree.addBinOp(node["left"])
     else: discard
 
     for comparator in node["comparators"]: # add the comparator to the infix tree (right side)
@@ -102,7 +110,7 @@ proc addCompare*(tree: NimNode, node: JsonNode) =
         of "Str": tree.addString(comparator)
         of "Num": tree.addIntOrFloat(comparator)
         of "Name": tree.addName(comparator)
-        of "BinOp": tree.addPyBinOp(comparator)
+        of "BinOp": tree.addBinOp(comparator)
         else: discard
 
 

@@ -1,6 +1,6 @@
-import macros, json
 # Python AST node documentation (easy to read & understand)
 # https://greentreesnakes.readthedocs.io/en/latest/nodes.html
+import macros, json
 
 # NOTE: may run into problems w/ big numbers
 proc addIntOrFloat*(tree: NimNode, node: JsonNode) = # integer / float

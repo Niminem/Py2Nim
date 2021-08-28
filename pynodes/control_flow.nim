@@ -111,3 +111,16 @@ proc addIf*(tree: NimNode, node: JsonNode) =
         ifStmtTree.add branch
 
     tree.add ifStmtTree
+
+
+# TODO
+# For(target, iter, body, orelse, type_comment)
+# While(test, body, orelse)
+# Break
+# Continue
+# Try(body, handlers, orelse, finalbody)
+# TryFinally(body, finalbody)
+# TryExcept(body, handlers, orelse)
+# ExceptHandler(type, name, body)
+# With(items, body, type_comment)
+# withitem(context_expr, optional_vars)
