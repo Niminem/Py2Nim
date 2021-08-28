@@ -12,4 +12,6 @@ proc addFromNode*(tree: NimNode, node: JsonNode) =
         tree.addIf(node)
     of "Call":
         tree.addCall(node)
+    of "For":
+        tree.addFor(node)
     else: discard

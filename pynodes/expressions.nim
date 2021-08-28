@@ -27,14 +27,18 @@ proc addCall*(tree: NimNode, node: JsonNode) = # -- Call --
     case node["func"]["id"].getStr # function name
     of "print":
         callTree.add newIdentNode("echo")
+    of "type":
+            callTree.add newIdentNode("type")
     else: discard
 
     for arg in node["args"]:
         case arg["_type"].getStr
         of "Str":
             callTree.addString(arg)
+        of "Call":
+            callTree.addCall(arg)
         else:
-            callTree.add newIdentNode(arg["id"].getStr)
+            callTree.add newIdentNode(arg["id"].getStr) # ???
     
     for kwarg in node["keywords"]:
         discard

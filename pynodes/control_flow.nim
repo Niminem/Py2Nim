@@ -3,6 +3,8 @@
 import macros, json
 import expressions, literals, statements, variables
 
+{.experimental: "codeReordering".}
+
 proc addIfBranches*(tree: var seq[NimNode], node: JsonNode) =
 
     var branchTree = nnkElifBranch.newTree()
@@ -80,6 +82,8 @@ proc addIf*(tree: NimNode, node: JsonNode) =
             ifStmtBodyTree.addExpr(body)
         of "Pass":
             ifStmtBodyTree.addPass()
+        of "For":
+            ifStmtBodyTree.addFor(body)
         else: discard
 
     # add the IF statement to the tree
@@ -101,6 +105,10 @@ proc addIf*(tree: NimNode, node: JsonNode) =
             var elseBranchTree = nnkElse.newTree()
             elseBranchTree.addPass()
             elifElseBranchTreeSeq.add elseBranchTree
+        of "Expr":
+            var elseBranchTree = nnkElse.newTree()
+            elseBranchTree.addExpr(branch)
+            elifElseBranchTreeSeq.add elseBranchTree
         else: discard
 
         for brnch in elifElseBranchTreeSeq:
@@ -111,6 +119,37 @@ proc addIf*(tree: NimNode, node: JsonNode) =
         ifStmtTree.add branch
 
     tree.add ifStmtTree
+
+proc addFor*(tree: NimNode, node: JsonNode) =
+    # for TARGET in ITER: BODY
+    var forStmtTree = nnkForStmt.newTree()
+
+    # TARGET
+    case node["target"]["_type"].getStr
+    of "Name":
+        forStmtTree.addName(node["target"])
+    else: discard
+    # ITER
+    case node["iter"]["_type"].getStr
+    of "Name":
+        forStmtTree.addName(node["iter"])
+    of "Str":
+        forStmtTree.addString(node["iter"])
+    else: discard
+    # BODY
+    var bodyStmtTree = nnkStmtList.newTree()
+    for body in node["body"]:
+        case body["_type"].getStr
+        of "Expr":
+            bodyStmtTree.addExpr(body)
+        of "Pass":
+            bodyStmtTree.addPass()
+        # of "If":
+        #     bodyStmtTree.addIf(body) # circular dependency... :( how to fix?
+        else: discard
+    
+    forStmtTree.add bodyStmtTree
+    tree.add forStmtTree
 
 
 # TODO
