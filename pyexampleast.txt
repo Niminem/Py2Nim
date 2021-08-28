@@ -1,0 +1,94 @@
+{
+  "_type": "Module",
+  "body": [
+    {
+      "_type": "For",
+      "body": [
+        {
+          "_type": "If",
+          "body": [
+            {
+              "_type": "Expr",
+              "col_offset": 8,
+              "lineno": 12,
+              "value": {
+                "_type": "Call",
+                "args": [
+                  {
+                    "_type": "Name",
+                    "col_offset": 14,
+                    "ctx": {
+                      "_type": "Load"
+                    },
+                    "id": "character",
+                    "lineno": 12
+                  }
+                ],
+                "col_offset": 8,
+                "func": {
+                  "_type": "Name",
+                  "col_offset": 8,
+                  "ctx": {
+                    "_type": "Load"
+                  },
+                  "id": "print",
+                  "lineno": 12
+                },
+                "keywords": [],
+                "lineno": 12
+              }
+            }
+          ],
+          "col_offset": 4,
+          "lineno": 11,
+          "orelse": [],
+          "test": {
+            "_type": "Compare",
+            "col_offset": 7,
+            "comparators": [
+              {
+                "_type": "Str",
+                "col_offset": 20,
+                "lineno": 11,
+                "s": "e"
+              }
+            ],
+            "left": {
+              "_type": "Name",
+              "col_offset": 7,
+              "ctx": {
+                "_type": "Load"
+              },
+              "id": "character",
+              "lineno": 11
+            },
+            "lineno": 11,
+            "ops": [
+              {
+                "_type": "Eq"
+              }
+            ]
+          }
+        }
+      ],
+      "col_offset": 0,
+      "iter": {
+        "_type": "Str",
+        "col_offset": 17,
+        "lineno": 10,
+        "s": "Leon"
+      },
+      "lineno": 10,
+      "orelse": [],
+      "target": {
+        "_type": "Name",
+        "col_offset": 4,
+        "ctx": {
+          "_type": "Store"
+        },
+        "id": "character",
+        "lineno": 10
+      }
+    }
+  ]
+}
