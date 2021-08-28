@@ -84,6 +84,8 @@ proc addIf*(tree: NimNode, node: JsonNode) =
             ifStmtBodyTree.addPass()
         of "For":
             ifStmtBodyTree.addFor(body)
+        of "Assign":
+            ifStmtBodyTree.addAssign(body) # test
         else: discard
 
     # add the IF statement to the tree

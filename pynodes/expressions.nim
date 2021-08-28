@@ -29,7 +29,7 @@ proc addCall*(tree: NimNode, node: JsonNode) = # -- Call --
         callTree.add newIdentNode("echo")
     of "type":
             callTree.add newIdentNode("type")
-    else: discard
+    else: callTree.add newIdentNode(node["func"]["id"].getStr) # test
 
     for arg in node["args"]:
         case arg["_type"].getStr

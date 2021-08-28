@@ -24,6 +24,8 @@ proc addAssign*(tree: NimNode, node: JsonNode) = # -- Name --
         identDefsTree.addBinOp(node["value"]) # adds infix operation as the value of the assignment
     of "Name":
         identDefsTree.addName(node["value"])
+    of "Call":
+        identDefsTree.addCall(node["value"])
     else: discard
 
     varSectionTree.add identDefsTree
