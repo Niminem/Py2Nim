@@ -22,6 +22,8 @@ proc addAssign*(tree: NimNode, node: JsonNode) = # -- Name --
         identDefsTree.addIntOrFloat(node["value"]) # value is either int or float
     of "BinOp":
         identDefsTree.addPyBinOp(node["value"]) # adds infix operation as the value of the assignment
+    of "Name":
+        identDefsTree.addName(node["value"])
     else: discard
 
     varSectionTree.add identDefsTree
