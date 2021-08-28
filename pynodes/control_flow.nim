@@ -55,7 +55,7 @@ proc addIfBranches*(tree: var seq[NimNode], node: JsonNode) =
         for brnch in elifElseBranchTreeSeq:
             tree.add brnch
 
-
+proc addFor*(tree: NimNode, node: JsonNode) # FORWARD DECLARATION
 proc addIf*(tree: NimNode, node: JsonNode) =
 
     var ifStmtTree = nnkIfStmt.newTree()
@@ -120,7 +120,9 @@ proc addIf*(tree: NimNode, node: JsonNode) =
 
     tree.add ifStmtTree
 
+
 proc addFor*(tree: NimNode, node: JsonNode) =
+
     # for TARGET in ITER: BODY
     var forStmtTree = nnkForStmt.newTree()
 
@@ -144,8 +146,8 @@ proc addFor*(tree: NimNode, node: JsonNode) =
             bodyStmtTree.addExpr(body)
         of "Pass":
             bodyStmtTree.addPass()
-        # of "If":
-        #     bodyStmtTree.addIf(body) # circular dependency... :( how to fix?
+        of "If":
+            bodyStmtTree.addIf(body) # circular dependency... :( how to fix?
         else: discard
     
     forStmtTree.add bodyStmtTree
@@ -153,7 +155,6 @@ proc addFor*(tree: NimNode, node: JsonNode) =
 
 
 # TODO
-# For(target, iter, body, orelse, type_comment)
 # While(test, body, orelse)
 # Break
 # Continue

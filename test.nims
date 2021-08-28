@@ -1,21 +1,9 @@
-# for testing/validating asts', tests, etc.
-import macros
+import macros, json
+import pynodes/control_flow
 
+const fac4 = (var x = 1; for i in 1..4: x *= i; x)
+echo fac4
 
-# nnkStmtList.newTree(
-#   nnkForStmt.newTree(
-#     newIdentNode("character"),
-#     newLit("leon"),
-#     nnkStmtList.newTree(
-#       newIdentNode("pass")
-#     )
-#   )
-# )
-
-dumpastgen:
-    # nnkForStmt(ident1, ident2, expr1, stmt1)
-    for character in "leon":
-        pass
-
-
-
+dumptree:
+    var fruits = ["apple", "banana", "cherry", "kiwi", "mango"]
+    var newlist =  (var list: seq[string] ; for fruit in fruits: list.add fruit if "a" in fruit) # (x for x in fruits if "a" in x)
