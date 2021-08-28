@@ -1,4 +1,5 @@
 import macros, json
+#import eval
 
 {.experimental:"codeReordering".} # removes the need for forward declarations
 
@@ -16,9 +17,8 @@ proc addEvaluatedPyType*(tree: NimNode, node: JsonNode) =
         tree.addCall(node)
     else: discard
 
-
 proc addPass*(tree: NimNode) =
-    tree.add nnkDiscardStmt.newTree(newEmptyNode())
+    tree.add nnkDiscardStmt.newTree(newEmptyNode()) # discard the result
 
 proc addName*(tree: NimNode, node: JsonNode) =
     tree.add newIdentNode(node["id"].getStr)
@@ -33,7 +33,6 @@ proc addIntOrFloat*(tree: NimNode, node: JsonNode) =
     of JInt:
         tree.add newLit(node["n"].getInt) # value is an INTEGER
     else: discard
-
 
 proc addCall*(tree: NimNode, node: JsonNode) =
 
@@ -72,7 +71,7 @@ proc addPyBinOp*(tree: NimNode, node: JsonNode) =
         infixTree.add ident("/")
     of "Mod":
         infixTree.add ident("mod")
-    # of "Pow": # must be able to handle two different ways (refer to `math` lib for pow() and `^`)
+    # of "Pow": # must be able to handle two different ways (refer to `math` lib for pow() and `^` diff/uses)
     else: discard
 
     case node["left"]["_type"].getStr # left side of the operator
@@ -99,7 +98,7 @@ proc addPyBinOp*(tree: NimNode, node: JsonNode) =
 proc addExpr*(tree: NimNode, node: JsonNode) =
     case node["value"]["_type"].getStr
     of "Call":
-        tree.addCall(node["value"])    
+        tree.addCall(node["value"])   
     else: discard
 
 
@@ -200,6 +199,10 @@ proc addIfBranches*(tree: var seq[NimNode], node: JsonNode) =
         case branch["_type"].getStr
         of "If":
             elifElseBranchTreeSeq.addIfBranches(branch)
+        of "Pass":
+            var elseBranchTree = nnkElse.newTree()
+            elseBranchTree.addPass()
+            elifElseBranchTreeSeq.add elseBranchTree
         else: discard
 
         for brnch in elifElseBranchTreeSeq:
@@ -249,6 +252,10 @@ proc addIf*(tree: NimNode, node: JsonNode) =
         case branch["_type"].getStr
         of "If":
             elifElseBranchTreeSeq.addIfBranches(branch)
+        of "Pass":
+            var elseBranchTree = nnkElse.newTree()
+            elseBranchTree.addPass()
+            elifElseBranchTreeSeq.add elseBranchTree
         else: discard
 
         for brnch in elifElseBranchTreeSeq:
