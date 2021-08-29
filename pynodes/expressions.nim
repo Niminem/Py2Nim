@@ -18,6 +18,8 @@ proc addExpr*(tree: NimNode, node: JsonNode) = # -- Expression --
         tree.addIntOrFloat(node["value"])
     of "Str":
         tree.addString(node["value"])
+    of "NameConstant":
+        tree.addNameConstant(node["value"])
     else: discard
 
 
@@ -37,6 +39,8 @@ proc addCall*(tree: NimNode, node: JsonNode) = # -- Call --
             callTree.addString(arg)
         of "Call":
             callTree.addCall(arg)
+        of "NameConstant":
+            callTree.addNameConstant(arg)
         else:
             callTree.add newIdentNode(arg["id"].getStr) # ???
     

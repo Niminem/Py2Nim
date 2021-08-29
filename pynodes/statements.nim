@@ -11,7 +11,7 @@ proc addAssign*(tree: NimNode, node: JsonNode) = # -- Name --
     for target in node["targets"]:
         if target["_type"].getStr == "Name":
             identDefsTree.add ident(target["id"].getStr) # adding each IDENTIFIER/NAME to the node
-        else: discard
+        else: raise newException(ValueError, "(addAssign) unknown target: " & target["_type"].getStr)
 
     identDefsTree.add newEmptyNode() # for the return type
 
@@ -26,6 +26,10 @@ proc addAssign*(tree: NimNode, node: JsonNode) = # -- Name --
         identDefsTree.addName(node["value"])
     of "Call":
         identDefsTree.addCall(node["value"])
+    of "List":
+        identDefsTree.addList(node["value"])
+    of "NameConstant":
+        identDefsTree.addNameConstant(node["value"])
     else: discard
 
     varSectionTree.add identDefsTree

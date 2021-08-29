@@ -3,7 +3,7 @@
 import macros, json
 import expressions, literals, statements, variables
 
-{.experimental: "codeReordering".}
+# {.experimental: "codeReordering".}
 
 proc addIfBranches*(tree: var seq[NimNode], node: JsonNode) =
 
