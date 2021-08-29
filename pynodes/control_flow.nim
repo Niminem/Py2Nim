@@ -17,6 +17,9 @@ proc addIfBranches*(tree: var seq[NimNode], node: JsonNode) =
     of "Compare": # if the if statement operation is a comparison
         ifStmtInfixTree.addCompare(node["test"])
 
+    of "NameConstant":
+        branchTree.addNameConstant(node["test"])
+
     else: raise newException(Exception,
         "(if statement is NOT a Comparison) Must add functionality :)")
 
@@ -32,7 +35,8 @@ proc addIfBranches*(tree: var seq[NimNode], node: JsonNode) =
         else: discard
 
     # add the IF statement to the tree
-    branchTree.add ifStmtInfixTree
+    if node["test"]["_type"].getStr == "Compare":
+        branchTree.add ifStmtInfixTree
     branchTree.add ifstmtBodyTree
     tree.add branchTree
 
@@ -69,10 +73,12 @@ proc addIf*(tree: NimNode, node: JsonNode) =
     
     of "Compare": # if the if statement operation is a comparison
         ifStmtInfixTree.addCompare(node["test"])
+    of "NameConstant":
+        ifBranchTree.addNameConstant(node["test"])
 
     else: raise newException(Exception,
         "(if statement is NOT a Comparison) Must add functionality :)")
-
+ 
     # logic for the body of the if statement
     if node["body"].len > 1: raise newException(Exception,
         "(more than 1 body for If statement) Must add functionality :)")
@@ -89,7 +95,8 @@ proc addIf*(tree: NimNode, node: JsonNode) =
         else: discard
 
     # add the IF statement to the tree
-    ifBranchTree.add ifStmtInfixTree
+    if node["test"]["_type"].getStr == "Compare":
+        ifBranchTree.add ifStmtInfixTree
     ifBranchTree.add ifstmtBodyTree
     ifElifElseBranches.add ifBranchTree
 
@@ -139,6 +146,8 @@ proc addFor*(tree: NimNode, node: JsonNode) =
         forStmtTree.addName(node["iter"])
     of "Str":
         forStmtTree.addString(node["iter"])
+    of "List":
+        forStmtTree.addList(node["iter"])
     else: discard
     # BODY
     var bodyStmtTree = nnkStmtList.newTree()
@@ -149,7 +158,7 @@ proc addFor*(tree: NimNode, node: JsonNode) =
         of "Pass":
             bodyStmtTree.addPass()
         of "If":
-            bodyStmtTree.addIf(body) # circular dependency... :( how to fix?
+            bodyStmtTree.addIf(body)
         else: discard
     
     forStmtTree.add bodyStmtTree

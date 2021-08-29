@@ -75,6 +75,8 @@ proc addBinOp*(tree: NimNode, node: JsonNode) =
         infixTree.addBinOp(node["left"])
     of "Name":
         infixTree.addName(node["left"])
+    # of "Call":
+    #     infixTree.addCall(node["left"])
     else: discard
 
     case node["right"]["_type"].getStr # right side of the operator
@@ -84,6 +86,8 @@ proc addBinOp*(tree: NimNode, node: JsonNode) =
         infixTree.addBinOp(node["right"])
     of "Name":
         infixTree.addName(node["right"])
+    # of "Call":
+    #     infixTree.addCall(node["right"])
     else: discard
 
     tree.add infixTree
@@ -111,6 +115,8 @@ proc addCompare*(tree: NimNode, node: JsonNode) =
     of "Num": tree.addIntOrFloat(node["left"])
     of "Name": tree.addName(node["left"])
     of "BinOp": tree.addBinOp(node["left"])
+    of "Call": tree.addCall(node["left"])
+    of "NameConstant": tree.addNameConstant(node["left"])
     else: discard
 
     for comparator in node["comparators"]: # add the comparator to the infix tree (right side)
@@ -119,6 +125,7 @@ proc addCompare*(tree: NimNode, node: JsonNode) =
         of "Num": tree.addIntOrFloat(comparator)
         of "Name": tree.addName(comparator)
         of "BinOp": tree.addBinOp(comparator)
+        of "NameConstant": tree.addNameConstant(comparator)
         else: discard
 
 
