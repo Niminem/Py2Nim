@@ -3,7 +3,6 @@
 import macros, json
 import literals, expressions, variables
 
-
 proc addAssign*(tree: NimNode, node: JsonNode) = # -- Name --
 
     var varSectionTree = nnkVarSection.newTree() # creates a var section/scope

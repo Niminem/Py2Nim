@@ -1,8 +1,9 @@
 import macros, json
 # import pynodes/control_flow
 
-if "":
-    echo "yes"
 dumpastgen:
-    if true:
-        echo "yes"
+    if false: discard
+    elif false: discard
+    else:
+        var poop = True
+        print("hello world")
