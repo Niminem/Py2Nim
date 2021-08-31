@@ -1,6 +1,7 @@
 # Python AST node documentation (easy to read & understand)
 # https://greentreesnakes.readthedocs.io/en/latest/nodes.html
 import macros, json, sequtils
+import ../nimast/ast
 
 # NOTE: may run into problems w/ big numbers
 proc addIntOrFloat*(tree: NimNode, node: JsonNode) = # integer / float
@@ -58,6 +59,47 @@ proc addNameConstant*(tree: NimNode, node: JsonNode) = # name constant (true, fa
     of "true","false": tree.add newLit(node["value"].getBool)
     else: tree.add newCommentStmtNode("Manual Fix Needed: value is None")
 
+proc formattedValue*(node: JsonNode): string = # formatted value for JoinedStr # EXPERIMENTAL / TEST
+    if node["conversion"].getInt != -1: raise newException(ValueError,
+            "formatted value conversion 'formatting not yet supported")
+    if $node["format_spec"] != "null": raise newException(ValueError,
+            "formatted value format_spec 'formatting not yet supported")
+    
+    case node["value"]["_type"].getStr
+    of "Num":
+        case node["value"]["n"].kind
+        of JFloat:
+            return "{" & $node["value"]["n"].getFloat & "}"
+        of JInt:
+            return "{" & $node["value"]["n"].getInt & "}"
+        else: raise newException(ValueError, "unexpected type for Num")
+    of "Str": return $node["value"]["s"]
+    of "Name": return "{" & node["value"]["id"].getStr & "}"
+
+    of "Call":
+        if node["value"]["args"].len != 0 and node["value"]["keywords"].len != 0:
+            raise newException(ValueError, "(addFormattedValue) keywords/args not yet supported- add functionality")
+        return "{" & node["value"]["func"]["id"].getStr & "()" & "}"
+
+    else: raise newException(ValueError, "unexpected type for formattedvalue")
+
+proc addJoinedStr*(tree: NimNode, node: JsonNode) = # joined string (f string, import strformat for Nim) # EXPERIMENTAL / TEST
+
+    var callStrLit = nnkCallStrLit.newTree(ident("fmt"))
+    var fmtStr: string
+    for value in node["values"]:
+        case value["_type"].getStr
+        of "FormattedValue": fmtStr.add formattedValue(value)
+        of "Str": fmtStr.add value["s"].getStr
+        else: raise newException(ValueError, "unsupported type in addJoinedStr: " & value["_type"].getStr)
+
+    callStrLit.add newLit(fmtStr)
+    tree.add callStrLit
+
+    nimModules.add("strformat") # for importing strformat module to Nim file after ast is generated
+
+
+
 
 # TODO:
 # FormattedValue(value, conversion, format_spec)
@@ -66,5 +108,4 @@ proc addNameConstant*(tree: NimNode, node: JsonNode) = # name constant (true, fa
 # Tuple(elts, ctx)
 # Set(elts)
 # Dict(keys, values)
-# NameConstant(value)
 # Ellipsis

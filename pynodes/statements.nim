@@ -29,6 +29,8 @@ proc addAssign*(tree: NimNode, node: JsonNode) = # -- Name --
         identDefsTree.addList(node["value"])
     of "NameConstant":
         identDefsTree.addNameConstant(node["value"])
+    of "JoinedStr":
+        identDefsTree.addJoinedStr(node["value"])
     else: discard
 
     varSectionTree.add identDefsTree

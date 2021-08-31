@@ -47,9 +47,11 @@ proc addCall*(tree: NimNode, node: JsonNode) = # -- Call --
             callTree.addName(arg)
         of "List":
             callTree.addList(arg)
+        of "JoinedStr":
+            callTree.addJoinedStr(arg)
         else:
             raise newException(ValueError,
-                "Unknown arg in node[\"args\"] (Call() in expressions.nim)\n" & $arg)
+                "Unknown arg in node[\"args\"] (Call() in expressions.nim)\n" & $arg["_type"])
     
     for kwarg in node["keywords"]:
         discard

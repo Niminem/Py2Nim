@@ -51,7 +51,7 @@ proc addIfBranches*(tree: var seq[NimNode], node: JsonNode) =
     var elifElseBranchTreeSeq: seq[NimNode]
     for branch in node["orelse"]:
         case branch["_type"].getStr
-        of "If": # TESTING, may need to do elif check rather than using else body
+        of "If":
             addElseToTree = true
             elseBodyTree.addIf(branch)
         of "For":
