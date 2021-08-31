@@ -30,7 +30,7 @@ proc addCall*(tree: NimNode, node: JsonNode) = # -- Call --
     of "print":
         callTree.add newIdentNode("echo")
     of "type":
-            callTree.add newIdentNode("type")
+        callTree.add newIdentNode("type")
     else: callTree.add newIdentNode(node["func"]["id"].getStr) # test
 
     for arg in node["args"]:
@@ -41,8 +41,15 @@ proc addCall*(tree: NimNode, node: JsonNode) = # -- Call --
             callTree.addCall(arg)
         of "NameConstant":
             callTree.addNameConstant(arg)
+        of "Num":
+            callTree.addIntOrFloat(arg)
+        of "Name":
+            callTree.addName(arg)
+        of "List":
+            callTree.addList(arg)
         else:
-            callTree.add newIdentNode(arg["id"].getStr) # ???
+            raise newException(ValueError,
+                "Unknown arg in node[\"args\"] (Call() in expressions.nim)\n" & $arg)
     
     for kwarg in node["keywords"]:
         discard

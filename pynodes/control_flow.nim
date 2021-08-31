@@ -43,38 +43,41 @@ proc addIfBranches*(tree: var seq[NimNode], node: JsonNode) =
     branchTree.add ifstmtBodyTree
     tree.add branchTree
 
-    # # logic for the elif/else branch(es) of the if statement
-
-    # NOTES:
-    # the IF in case branch below doesn't work in the ELSE branch
-    # PASS isn't handled correctly either, because their could be other logic preceding the pass statement
-    # need to add logic for Assign, For, Expr, etc. (refer to IF proc below, that proc seems solid so far)
-    # wee woo peanut
-
+    # logic for the elif/else branch(es) of the if statement
     var elseBranchTree = nnkElse.newTree()
     var elseBodyTree = nnkStmtList.newTree()
+    var addElseToTree = false
 
     var elifElseBranchTreeSeq: seq[NimNode]
     for branch in node["orelse"]:
         case branch["_type"].getStr
-        of "If":
-            elifElseBranchTreeSeq.addIfBranches(branch)
+        of "If": # TESTING, may need to do elif check rather than using else body
+            addElseToTree = true
+            elseBodyTree.addIf(branch)
+        of "For":
+            addElseToTree = true
+            elseBodyTree.addFor(branch)
         of "Pass":
-            elseBranchTree.addPass()
-            elifElseBranchTreeSeq.add elseBranchTree
-        # of "Assign":
-        #     elseBodyTree.addAssign(branch)
-        # of "For":
-        #     var elseBranchTree = nnkElse.newTree()
-        #     elseBranchTree.addFor(branch)
-        #     elifElseBranchTreeSeq.add elseBranchTree
-        else: discard
+            addElseToTree = true
+            elseBodyTree.addPass()
+        of "Expr":
+            addElseToTree = true
+            elseBodyTree.addExpr(branch)
+        of "Assign":
+            addElseToTree = true
+            elseBodyTree.addAssign(branch)
+        else:
+            echo "what else?: " & branch["_type"].getStr
+            discard
 
+    # logic for adding else body to else branch, then to elifelsebranchtreeseq
+    if addElseToTree:
+        elseBranchTree.add elseBodyTree
+        elifElseBranchTreeSeq.add elseBranchTree
+
+    # add elif/else branches to tree (final)
     for brnch in elifElseBranchTreeSeq:
         tree.add brnch
-
-    #elseBranchTree.add elseBodyTree
-    #tree.add elseBranchTree
 
 
 
@@ -119,9 +122,8 @@ proc addIf*(tree: NimNode, node: JsonNode) =
     ifElifElseBranches.add ifBranchTree
 
     # logic for the elif/else branch(es) of the if statement
-    var elifElseBranchTreeSeq: seq[NimNode] # TEST
+    var elifElseBranchTreeSeq: seq[NimNode]
     for branch in node["orelse"]:
-        #var elifElseBranchTreeSeq: seq[NimNode]
         case branch["_type"].getStr
         of "If":
             elifElseBranchTreeSeq.addIfBranches(branch)
@@ -135,10 +137,8 @@ proc addIf*(tree: NimNode, node: JsonNode) =
             elifElseBranchTreeSeq.add elseBranchTree
         
         else: discard
-    for brnch in elifElseBranchTreeSeq: # TEST
+    for brnch in elifElseBranchTreeSeq:
             ifElifElseBranches.add brnch
-        # for brnch in elifElseBranchTreeSeq:
-        #     ifElifElseBranches.add brnch
 
     # build the tree
     for branch in ifElifElseBranches:
