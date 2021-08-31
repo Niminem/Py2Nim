@@ -1,9 +1,13 @@
 import macros, json
-# import pynodes/control_flow
 
-dumpastgen:
-    if false: discard
-    elif false: discard
+dumptree:
+    if this == that: discard
+    elif this == other: discard
     else:
-        var poop = True
-        print("hello world")
+        doit()
+        var name = "main"
+        
+
+
+
+

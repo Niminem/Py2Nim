@@ -1,18 +1,34 @@
-thing = False
-ls = [1,2,3,4,5]
-for elem in ls:
-    if thing == True:
-        thing = False
-        print("hello")
-        for i in ls:
-            pass
-    elif False:
-        print("goodbye")
-        for i in ls:
-            print(i)
-        pass
-    else:
-        poop = True
-        for elem in [1,2,3,4]:
-            print(elem)
-        print("hello world")
+if False:
+    name = "Bob"
+    for l in ls:
+        print(l)
+    #print(name)
+        if x <= y() * 2:
+            print(x)
+    call()
+elif "this" == "that":
+    name = "Bob"
+    for l in ls:
+        print(l)
+    #print(name)
+        if x <= y() * 2:
+            print(x)
+    call()
+    name = "killa"
+else:
+    if this == "that": pass
+    #name = "Bob"
+    # for l in ls:
+    #     print(l)
+    #     if x <= y() * 2:
+    #         print(x)
+    #     elif False: pass
+    #     else:
+    #         print(x)
+    # if this == "that":
+    #     call()
+    # call()
+    # name = "killa"
+
+#notes:
+# IF comparisons (w/ bool as well) & body logic is good
