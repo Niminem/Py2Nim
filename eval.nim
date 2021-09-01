@@ -14,4 +14,6 @@ proc addFromNode*(tree: NimNode, node: JsonNode) =
         tree.addCall(node)
     of "For":
         tree.addFor(node)
+    of "Assert":
+        tree.addAssert(node)
     else: discard

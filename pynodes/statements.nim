@@ -36,9 +36,30 @@ proc addAssign*(tree: NimNode, node: JsonNode) = # -- Name --
     varSectionTree.add identDefsTree
     tree.add varSectionTree
 
-
 proc addPass*(tree: NimNode) = # -- Pass -- (discard for nim)
     tree.add nnkDiscardStmt.newTree(newEmptyNode()) # discard the result
+
+proc addAssert*(tree: NimNode, node: JsonNode) = # -- Assert --
+    # nnkCommand.newTree(
+    #     newIdentNode("doAssert"),
+    #     nnkInfix.newTree(newIdentNode("=="), newLit("this"), newLit("thiss")),
+    #     newLit("this doesn\'t equal this"))
+    var doAssertTree = nnkCommand.newTree()
+    doAssertTree.add newIdentNode("doAssert")
+
+    case node["test"]["_type"].getStr
+    of "Compare":
+        var infixTree = nnkInfix.newTree() # IS THIS BEST?
+        infixTree.addCompare(node["test"]) # IS THIS BEST?
+        doAssertTree.add infixTree # IS THIS BEST?
+    else: raise newException(ValueError, "(addAssert) unknown test type: " & node["test"]["_type"].getStr)
+
+    if $node["msg"] != "null":
+        if node["msg"]["_type"].getStr == "Str": doAssertTree.addString(node["msg"])
+        else: raise newException(ValueError, "(addAssert) unknown msg type: " & node["msg"]["_type"].getStr)
+
+    tree.add doAssertTree
+
 
 
 # TODO

@@ -1,4 +1,2 @@
-name = +5
-id = -10
-if "this" not str:
-    pass
+assert "this" == "this", "this isn't equal to this"
+assert 999 == 999

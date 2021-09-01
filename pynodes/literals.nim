@@ -13,7 +13,8 @@ proc addIntOrFloat*(tree: NimNode, node: JsonNode) = # integer / float
     else: discard
 
 proc addString*(tree: NimNode, node: JsonNode) = # string
-    tree.add newLit(node["s"].getStr)
+    tree.add newStrLitNode(node["s"].getStr)
+    # need to remove the \' from the string later ...
 
 proc addList*(tree: NimNode, node: JsonNode) = # list / tuple, depending on value types in py list
 
