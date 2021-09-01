@@ -13,5 +13,4 @@ for pyNode in pyAst["body"]:
 nimAst.addModules()
 
 # print out nim ast tree
-echo "\nNim Script:"
 echo nimAst.repr & "\n"

@@ -102,8 +102,6 @@ proc addJoinedStr*(tree: NimNode, node: JsonNode) = # joined string (f string, i
 
 
 # TODO:
-# FormattedValue(value, conversion, format_spec)
-# JoinedStr(values)
 # Bytes(s)
 # Tuple(elts, ctx)
 # Set(elts)

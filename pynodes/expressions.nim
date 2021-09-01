@@ -127,6 +127,7 @@ proc addCompare*(tree: NimNode, node: JsonNode) =
     of "NameConstant": tree.addNameConstant(node["left"])
     of "Call": tree.addCall(node["left"])
     of "List": tree.addList(node["left"])
+    of "JoinedStr": tree.addJoinedStr(node["left"])
     else: discard
 
     for comparator in node["comparators"]: # add the comparator to the infix tree (right side)
@@ -138,7 +139,15 @@ proc addCompare*(tree: NimNode, node: JsonNode) =
         of "NameConstant": tree.addNameConstant(comparator)
         of "Call": tree.addCall(comparator)
         of "List": tree.addList(comparator)
+        of "JoinedStr": tree.addJoinedStr(comparator)
         else: discard
+
+    # NEED TO ADD REST OF THE COMPARATORS (ex. NOT, IN, IS, IS NOT, etc.)
+
+
+proc addUnaryOp*(tree: NimNode, node: JsonNode) =
+    discard
+
 
 
 # TODO
