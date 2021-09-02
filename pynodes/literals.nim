@@ -28,7 +28,6 @@ proc addList*(tree: NimNode, node: JsonNode) = # list / tuple, depending on valu
 
     let firstValType = node["elts"][0]["_type"].getStr # get first value type of list
     # check if all values are of same type
-    echo firstValType
     if all(node["elts"].getElems,
         proc (element: JsonNode): bool = return element["_type"].getStr == firstValType):
 
@@ -55,10 +54,12 @@ proc addList*(tree: NimNode, node: JsonNode) = # list / tuple, depending on valu
     else:
         discard # handle list of mixed types later
 
+
 proc addNameConstant*(tree: NimNode, node: JsonNode) = # name constant (true, false, None)
     case $node["value"]
     of "true","false": tree.add newLit(node["value"].getBool)
     else: tree.add newCommentStmtNode("Manual Fix Needed: value is None")
+
 
 proc formattedValue*(node: JsonNode): string = # formatted value for JoinedStr # EXPERIMENTAL / TEST
     if node["conversion"].getInt != -1: raise newException(ValueError,
@@ -83,6 +84,7 @@ proc formattedValue*(node: JsonNode): string = # formatted value for JoinedStr #
         return "{" & node["value"]["func"]["id"].getStr & "()" & "}"
 
     else: raise newException(ValueError, "unexpected type for formattedvalue")
+
 
 proc addJoinedStr*(tree: NimNode, node: JsonNode) = # joined string (f string, import strformat for Nim) # EXPERIMENTAL / TEST
 
