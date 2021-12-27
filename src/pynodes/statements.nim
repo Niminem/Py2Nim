@@ -3,7 +3,7 @@
 import macros, json
 import literals, expressions, variables
 
-proc addAssign*(tree: NimNode, node: JsonNode) = # -- Name --
+proc addAssign*(tree: NimNode, node: JsonNode) = # -- Assign -- variable assignment
 
     var varSectionTree = nnkVarSection.newTree() # creates a var section/scope
     var identDefsTree = newNimNode(nnkIdentDefs) # creates node for identifier
@@ -20,7 +20,7 @@ proc addAssign*(tree: NimNode, node: JsonNode) = # -- Name --
     of "Num":
         identDefsTree.addIntOrFloat(node["value"]) # value is either int or float
     of "BinOp":
-        identDefsTree.addBinOp(node["value"]) # adds infix operation as the value of the assignment
+        identDefsTree.addBinOp(node["value"]) # adds nim infix operation as the value of the assignment
     of "Name":
         identDefsTree.addName(node["value"])
     of "Call":
@@ -31,7 +31,8 @@ proc addAssign*(tree: NimNode, node: JsonNode) = # -- Name --
         identDefsTree.addNameConstant(node["value"])
     of "JoinedStr":
         identDefsTree.addJoinedStr(node["value"])
-    else: discard
+    else:
+        raise newException(ValueError, "(addAssign) unknown value type: " & node["value"]["_type"].getStr)
 
     varSectionTree.add identDefsTree
     tree.add varSectionTree
@@ -40,10 +41,6 @@ proc addPass*(tree: NimNode) = # -- Pass -- (discard for nim)
     tree.add nnkDiscardStmt.newTree(newEmptyNode()) # discard the result
 
 proc addAssert*(tree: NimNode, node: JsonNode) = # -- Assert --
-    # nnkCommand.newTree(
-    #     newIdentNode("doAssert"),
-    #     nnkInfix.newTree(newIdentNode("=="), newLit("this"), newLit("thiss")),
-    #     newLit("this doesn\'t equal this"))
     var doAssertTree = nnkCommand.newTree()
     doAssertTree.add newIdentNode("doAssert")
 
@@ -66,5 +63,4 @@ proc addAssert*(tree: NimNode, node: JsonNode) = # -- Assert --
 # AnnAssign(target, annotation, value, simple)
 # AugAssign(target, op, value)
 # Raise(exc, cause)
-# Assert(test, msg)
 # Delete(targets)

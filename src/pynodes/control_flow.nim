@@ -4,7 +4,7 @@ import macros, json
 import expressions, literals, statements, variables
 
 
-proc addFor*(tree: NimNode, node: JsonNode) # FORWARD DECLARATION
+proc addFor*(tree: NimNode, node: JsonNode) # FORWARD DECLARATION NEEDED
 proc addIf*(tree: NimNode, node: JsonNode)
 
 proc addIfBranches*(tree: var seq[NimNode], node: JsonNode) =
@@ -19,8 +19,7 @@ proc addIfBranches*(tree: var seq[NimNode], node: JsonNode) =
         ifStmtInfixTree.addCompare(node["test"])
     of "NameConstant":
         branchTree.addNameConstant(node["test"])
-    else: raise newException(Exception,
-        "(if statement is NOT a Comparison or Name Constant) Must add functionality :)")
+    else: raise newException(ValueError, "(IfBranches) unknown operation type: " & node["test"]["_type"].getStr)
 
     # logic for the body of the if statement
     for body in node["body"]:
@@ -35,7 +34,7 @@ proc addIfBranches*(tree: var seq[NimNode], node: JsonNode) =
             ifStmtBodyTree.addFor(body)
         of "If":
             ifStmtBodyTree.addIf(body)
-        else: discard
+        else: raise newException(ValueError, "(IfBranches) unknown body type: " & body["_type"].getStr)
 
     # add the IF statement to the tree
     if node["test"]["_type"].getStr == "Compare":
@@ -66,9 +65,7 @@ proc addIfBranches*(tree: var seq[NimNode], node: JsonNode) =
         of "Assign":
             addElseToTree = true
             elseBodyTree.addAssign(branch)
-        else:
-            echo "what else?: " & branch["_type"].getStr
-            discard
+        else: raise newException(ValueError, "(IfBranches) unknown branch type: " & branch["_type"].getStr)
 
     # logic for adding else body to else branch, then to elifelsebranchtreeseq
     if addElseToTree:
@@ -97,8 +94,7 @@ proc addIf*(tree: NimNode, node: JsonNode) =
     of "NameConstant":
         ifBranchTree.addNameConstant(node["test"])
 
-    else: raise newException(Exception,
-        "(if statement is NOT a Comparison or Name Constant) Must add functionality :)")
+    else: raise newException(ValueError, "(If) unknown operation type: " & node["test"]["_type"].getStr)
  
     # logic for the body of the if statement
     for body in node["body"]:
@@ -113,7 +109,7 @@ proc addIf*(tree: NimNode, node: JsonNode) =
             ifStmtBodyTree.addAssign(body)
         of "If":
             ifStmtBodyTree.addIf(body)
-        else: discard
+        else: raise newException(ValueError, "(If) unknown body type: " & body["_type"].getStr)
 
     # add the IF statement to the tree
     if node["test"]["_type"].getStr == "Compare":
@@ -136,7 +132,7 @@ proc addIf*(tree: NimNode, node: JsonNode) =
             elseBranchTree.addExpr(branch)
             elifElseBranchTreeSeq.add elseBranchTree
         
-        else: discard
+        else: raise newException(ValueError, "(If) unknown branch type: " & branch["_type"].getStr)
     for brnch in elifElseBranchTreeSeq:
             ifElifElseBranches.add brnch
 
@@ -156,7 +152,7 @@ proc addFor*(tree: NimNode, node: JsonNode) =
     case node["target"]["_type"].getStr
     of "Name":
         forStmtTree.addName(node["target"])
-    else: discard
+    else: raise newException(ValueError, "(For) unknown target type: " & node["target"]["_type"].getStr)
     # ITER
     case node["iter"]["_type"].getStr
     of "Name":
@@ -165,7 +161,7 @@ proc addFor*(tree: NimNode, node: JsonNode) =
         forStmtTree.addString(node["iter"])
     of "List":
         forStmtTree.addList(node["iter"])
-    else: discard
+    else: raise newException(ValueError, "(For) unknown iter type: " & node["iter"]["_type"].getStr)
     # BODY
     var bodyStmtTree = nnkStmtList.newTree()
     for body in node["body"]:
@@ -176,7 +172,7 @@ proc addFor*(tree: NimNode, node: JsonNode) =
             bodyStmtTree.addPass()
         of "If":
             bodyStmtTree.addIf(body)
-        else: discard
+        else: raise newException(ValueError, "(For) unknown body type: " & body["_type"].getStr)
     
     forStmtTree.add bodyStmtTree
     tree.add forStmtTree

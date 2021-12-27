@@ -1,4 +1,4 @@
-import macros, json
+import std/[macros, json, sequtils]
 import pynodes/[literals, variables, expressions, statements, control_flow]
 
 # nim proc to evaluate possible _type's via case statement

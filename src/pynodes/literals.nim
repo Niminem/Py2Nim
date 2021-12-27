@@ -3,18 +3,17 @@
 import macros, json, sequtils
 import ../nimast/ast
 
-# NOTE: may run into problems w/ big numbers
+# NOTE: may run into problems w/ big numbers (BiggestFloat / BiggestInt ?)
 proc addIntOrFloat*(tree: NimNode, node: JsonNode) = # integer / float
     case node["n"].kind
     of JFloat:
         tree.add newLit(node["n"].getFloat)
     of JInt:
         tree.add newLit(node["n"].getInt)
-    else: discard
+    else: raise newException(ValueError, "(addIntOrFloat) unknown kind for Num: " & $node["n"].kind)
 
 proc addString*(tree: NimNode, node: JsonNode) = # string
-    tree.add newStrLitNode(node["s"].getStr)
-    # need to remove the \' from the string later ...
+    tree.add newStrLitNode(node["s"].getStr) # *** need to remove the \' from the string ***
 
 proc addList*(tree: NimNode, node: JsonNode) = # list / tuple, depending on value types in py list
 
@@ -46,26 +45,29 @@ proc addList*(tree: NimNode, node: JsonNode) = # list / tuple, depending on valu
                 for elem in node["elts"].getElems:
                     bracketTree.addString(elem)
             else:
-                discard # TODO: add support for other types
+                # TODO: add support for other types in list
+                raise newException(ValueError, "(addList) unsupported type in list: " & firstValType)
 
             prefixTree.add bracketTree
             tree.add prefixTree
 
     else:
-        discard # handle list of mixed types later
+        # TODO: handle list of mixed types later
+        raise newException(ValueError, "(addList) mixed types in list not yet supported")
 
 
-proc addNameConstant*(tree: NimNode, node: JsonNode) = # name constant (true, false, None)
+proc addNameConstant*(tree: NimNode, node: JsonNode) = # -- name constant -- boolean for nim (true, false, None)
     case $node["value"]
     of "true","false": tree.add newLit(node["value"].getBool)
-    else: tree.add newCommentStmtNode("Manual Fix Needed: value is None")
+    else: raise newException(ValueError, "(addNameConstant) python `None` not yet supported")
+        # tree.add newCommentStmtNode("Manual Fix Needed: value is None") # don't delete
 
 
 proc formattedValue*(node: JsonNode): string = # formatted value for JoinedStr # EXPERIMENTAL / TEST
     if node["conversion"].getInt != -1: raise newException(ValueError,
-            "formatted value conversion 'formatting not yet supported")
+            "(formattedValue) conversion formatting not yet supported")
     if $node["format_spec"] != "null": raise newException(ValueError,
-            "formatted value format_spec 'formatting not yet supported")
+            "(formattedValue) format_spec formatting not yet supported")
     
     case node["value"]["_type"].getStr
     of "Num":
@@ -74,19 +76,18 @@ proc formattedValue*(node: JsonNode): string = # formatted value for JoinedStr #
             return "{" & $node["value"]["n"].getFloat & "}"
         of JInt:
             return "{" & $node["value"]["n"].getInt & "}"
-        else: raise newException(ValueError, "unexpected type for Num")
+        else: raise newException(ValueError, "(formattedValue) unknown kind for Num: " & $node["value"]["n"].kind)
     of "Str": return $node["value"]["s"]
     of "Name": return "{" & node["value"]["id"].getStr & "}"
-
     of "Call":
         if node["value"]["args"].len != 0 and node["value"]["keywords"].len != 0:
-            raise newException(ValueError, "(addFormattedValue) keywords/args not yet supported- add functionality")
+            raise newException(ValueError, "(formattedValue) keywords/args not yet supported")
         return "{" & node["value"]["func"]["id"].getStr & "()" & "}"
 
-    else: raise newException(ValueError, "unexpected type for formattedvalue")
+    else: raise newException(ValueError, "(formattedValue) unknown value type: " & node["value"]["_type"].getStr)
 
 
-proc addJoinedStr*(tree: NimNode, node: JsonNode) = # joined string (f string, import strformat for Nim) # EXPERIMENTAL / TEST
+proc addJoinedStr*(tree: NimNode, node: JsonNode) = # -- joined string -- (f string, import strformat for Nim) # EXPERIMENTAL / TEST
 
     var callStrLit = nnkCallStrLit.newTree(ident("fmt"))
     var fmtStr: string
@@ -94,13 +95,12 @@ proc addJoinedStr*(tree: NimNode, node: JsonNode) = # joined string (f string, i
         case value["_type"].getStr
         of "FormattedValue": fmtStr.add formattedValue(value)
         of "Str": fmtStr.add value["s"].getStr
-        else: raise newException(ValueError, "unsupported type in addJoinedStr: " & value["_type"].getStr)
+        else: raise newException(ValueError, "(JoinedStr) unknown value type: " & value["_type"].getStr)
 
     callStrLit.add newLit(fmtStr)
     tree.add callStrLit
 
     nimModules.add("strformat") # for importing strformat module to Nim file after ast is generated
-
 
 
 
