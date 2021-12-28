@@ -1,4 +1,4 @@
-import std/[macros, json]
+import std/[macros, json, strutils]
 import eval, nimast/ast
 
 proc sourceGen*(pyAst: JsonNode): string =
@@ -15,3 +15,4 @@ proc sourceGen*(pyAst: JsonNode): string =
 
     # generate source code from ast tree
     result = nimAst.repr
+    result.removePrefix() # removes the leading new line from the source code

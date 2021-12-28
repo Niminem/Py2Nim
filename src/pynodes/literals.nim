@@ -2,6 +2,7 @@
 # https://greentreesnakes.readthedocs.io/en/latest/nodes.html
 import macros, json, sequtils
 import ../nimast/ast
+import variables
 
 # NOTE: may run into problems w/ big numbers (BiggestFloat / BiggestInt ?)
 proc addIntOrFloat*(tree: NimNode, node: JsonNode) = # integer / float
@@ -77,7 +78,7 @@ proc formattedValue*(node: JsonNode): string = # formatted value for JoinedStr #
         of JInt:
             return "{" & $node["value"]["n"].getInt & "}"
         else: raise newException(ValueError, "(formattedValue) unknown kind for Num: " & $node["value"]["n"].kind)
-    of "Str": return $node["value"]["s"]
+    of "Str": return $node["value"]["s"] # *** TEST ***
     of "Name": return "{" & node["value"]["id"].getStr & "}"
     of "Call":
         if node["value"]["args"].len != 0 and node["value"]["keywords"].len != 0:
@@ -102,11 +103,31 @@ proc addJoinedStr*(tree: NimNode, node: JsonNode) = # -- joined string -- (f str
 
     nimModules.add("strformat") # for importing strformat module to Nim file after ast is generated
 
+from expressions import addCall # apparently this gets around a circular import problem... for now
+proc addTuple*(tree: NimNode, node: JsonNode) = # -- tuple --
+    var tupleConstrTree = nnkTupleConstr.newTree()
+
+    for value in node["elts"].getElems:
+        case value["_type"].getStr
+        of "Num":
+            tupleConstrTree.addIntOrFloat(value)
+        of "Str":
+            tupleConstrTree.addString(value)
+        of "NameConstant":
+            tupleConstrTree.addNameConstant(value)
+        of "Call":
+            tupleconstrTree.addCall(value)
+        of "JoinedStr":
+            tupleConstrTree.addJoinedStr(value)
+        of "Name":
+            tupleConstrTree.addName(value)
+        else: raise newException(ValueError, "(addTuple) unknown value type: " & value["_type"].getStr)
+    
+    tree.add tupleConstrTree
 
 
 # TODO:
 # Bytes(s)
-# Tuple(elts, ctx)
 # Set(elts)
 # Dict(keys, values)
 # Ellipsis

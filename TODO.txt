@@ -7,7 +7,6 @@
 *** CONTINUE MAKING TRANSLATIONS: ***
 
 - Literals -
-Tuple
 Set
 
 - Expressions -
