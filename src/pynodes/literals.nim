@@ -16,6 +16,13 @@ proc addIntOrFloat*(tree: NimNode, node: JsonNode) = # integer / float
 proc addString*(tree: NimNode, node: JsonNode) = # string
     tree.add newStrLitNode(node["s"].getStr) # *** need to remove the \' from the string ***
 
+proc addNameConstant*(tree: NimNode, node: JsonNode) = # -- name constant -- boolean for nim (true, false, None)
+    case $node["value"]
+    of "true","false": tree.add newLit(node["value"].getBool)
+    else: raise newException(ValueError, "(addNameConstant) python `None` not yet supported")
+        # tree.add newCommentStmtNode("Manual Fix Needed: value is None") # don't delete
+
+proc addTuple*(tree: NimNode, node: JsonNode) # forward declaration
 proc addList*(tree: NimNode, node: JsonNode) = # list / tuple, depending on value types in py list
 
     var prefixTree = nnkPrefix.newTree(newIdentNode("@"))
@@ -45,6 +52,17 @@ proc addList*(tree: NimNode, node: JsonNode) = # list / tuple, depending on valu
             elif firstValType == "Str":
                 for elem in node["elts"].getElems:
                     bracketTree.addString(elem)
+            elif firstValType == "NameConstant":
+                for elem in node["elts"]:
+                    bracketTree.addNameConstant(elem)
+            elif firstValType == "List":
+                for elem in node["elts"]:
+                    bracketTree.addList(elem)
+            elif firstValType == "Tuple":
+                for elem in node["elts"]:
+                    bracketTree.addTuple(elem)
+
+
             else:
                 # TODO: add support for other types in list
                 raise newException(ValueError, "(addList) unsupported type in list: " & firstValType)
@@ -55,13 +73,6 @@ proc addList*(tree: NimNode, node: JsonNode) = # list / tuple, depending on valu
     else:
         # TODO: handle list of mixed types later
         raise newException(ValueError, "(addList) mixed types in list not yet supported")
-
-
-proc addNameConstant*(tree: NimNode, node: JsonNode) = # -- name constant -- boolean for nim (true, false, None)
-    case $node["value"]
-    of "true","false": tree.add newLit(node["value"].getBool)
-    else: raise newException(ValueError, "(addNameConstant) python `None` not yet supported")
-        # tree.add newCommentStmtNode("Manual Fix Needed: value is None") # don't delete
 
 
 proc formattedValue*(node: JsonNode): string = # formatted value for JoinedStr # EXPERIMENTAL / TEST

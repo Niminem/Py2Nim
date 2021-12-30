@@ -5,15 +5,20 @@ type
     ModuleError* = object of CatchableError
 
 proc translate*(pyModulePath: string, pyCmd:string = "python3", debug = false): string =
+    var dir: string
+    if debug:
+        dir = currentSourcePath.parentDir() # for testing
+    else:
+        dir = getAppDir() # for install
 
-    let pyAst = execProcess(pyCmd, args=[getAppDir() / "parser.py",
+    let pyAst = execProcess(pyCmd, args=[dir / "parser.py",
                     pyModulePath], options={poUsePath})
 
     if pyAst == "": # *** make better exception handling with this process ***
         raise ModuleError.newException("Unable to parse python module. Response: ")
 
     let
-        script = NimScriptPath getAppDir() / "interpreter.nims"
+        script = NimScriptPath dir / "interpreter.nims"
         intr = loadScript(script)
 
     result = intr.invoke(sourceGen, pyAst.parseJson, returnType = string)
