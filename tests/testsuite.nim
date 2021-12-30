@@ -6,5 +6,5 @@ import ../src/py2nim
 # NOTE
 # build a dynamic test suite (via macro / template) for each python file in the tests dir
 
-assert translate("tests" / "assignments.py", "python3", debug=true) == readFile(
-        "tests" / "assignments.nim"),"\nNim source differs from test: assignments.nim\n"
+assert translate("tests" / "basic_syntax.py", "python3", debug=true) == readFile(
+        "tests" / "basic_syntax.nim"),"\nNim source differs from test: assignments.nim\n"
