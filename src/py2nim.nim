@@ -1,4 +1,4 @@
-import std/[json, strutils, algorithm, osproc, macros]
+import std/[json, strutils, osproc, os]
 import nimscripter
 
 type
@@ -6,14 +6,14 @@ type
 
 proc translate*(pyModulePath: string, pyCmd:string = "python3", debug = false): string =
 
-    let pyAst = execProcess(pyCmd, args=[getProjectPath().replace("py2nim.nim","parser.py"),
+    let pyAst = execProcess(pyCmd, args=[getAppDir() / "parser.py",
                     pyModulePath], options={poUsePath})
 
     if pyAst == "": # *** make better exception handling with this process ***
         raise ModuleError.newException("Unable to parse python module. Response: ")
 
     let
-        script = NimScriptPath getProjectPath().replace("py2nim.nim","interpreter.nims")
+        script = NimScriptPath getAppDir() / "interpreter.nims"
         intr = loadScript(script)
 
     result = intr.invoke(sourceGen, pyAst.parseJson, returnType = string)
@@ -31,7 +31,6 @@ when isMainModule:
     # discard translate("script.py", "python3", true)
 
     # *** implement proper cli parsing ***
-    import os
 
     let count = paramCount()
     if count != 2:
